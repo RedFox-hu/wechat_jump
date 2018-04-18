@@ -37,6 +37,8 @@ def find_piece_board(img_path):
     img = Image.open(img_path)
     img_width, img_height = img.size
     img_pixel = img.load()
+    # init k
+    k = 0.584
 
     # 优化搜索范围
     # 以50为步长搜索,定位start_y
@@ -87,15 +89,30 @@ def find_piece_board(img_path):
             if abs(pt[0] - first_pt[0]) + abs(pt[1] - first_pt[1]) + abs(pt[2] - first_pt[2]) > 10:
                 board_x.append(x)
                 board_top_x = (min(board_x) + max(board_x)) // 2
-                # board_top_y = y
+                board_top_y = y
                 break
         if len(board_x):
             break
+    board_top_pixel = img_pixel[board_top_x, board_top_y]
+
+    # 棋盘中心点和定点X坐标一样
+    board_bottom_x = board_top_x
+    for y in range(board_top_y + 300, board_top_y, -1):
+        pt = img_pixel[board_top_x, y]
+        if abs(pt[0]-board_top_pixel[0]) + abs(pt[1]-board_top_pixel[1]) +abs(pt[2]-board_top_pixel[2]) < 10:
+            board_bottom_y = y
+            break
 
     board_center_x = board_top_x
-    board_center_y = int(piece_y - abs(piece_x - board_top_x) * 0.584)
+
+    if board_bottom_y - board_top_y < 20:
+        board_center_y = int(piece_y - abs(piece_x - board_top_x) * k)
+    else:
+        board_center_x = int((board_top_x + board_bottom_x) / 2)
+        board_center_y = int((board_top_y + board_bottom_y) / 2)
     # print("[FIND] board's top point:({0}, {1})".format(board_top_x, board_top_y))
     # print("[FIND] board's center point:({0}, {1})".format(board_center_x, board_center_y))
+    # print("[FIND] board's bottom point:({0}, {1})".format(board_bottom_x, board_bottom_y))
 
     return (piece_x, piece_y), (board_center_x, board_center_y)
 
@@ -122,6 +139,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # get_screen()
+
 
 
